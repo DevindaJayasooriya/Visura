@@ -9,8 +9,8 @@ const tools = [
   {
     lable: "conversation",
     icon: LucideMessageSquareShare,
-    color: "text-blue-500",
-    bgColor: "bg-blue-500/10",
+    color: "text-violet-500",
+    bgColor: "bg-violet-500/10",
     href: "/conversation",
   },
   {
@@ -47,7 +47,7 @@ const DashboardPage = () => {
 const router = useRouter();
   return (
     <div>
-      <div className="mb-8 space-y-4">
+      <div className="mt-12 mb-16 space-y-4">
         <h2 className="text-2xl md:text-4xl font-bold text-center">
           Explore the power of Visura
         </h2>

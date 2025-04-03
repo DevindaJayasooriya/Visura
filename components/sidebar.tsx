@@ -17,9 +17,9 @@ const routes =[
   color:"text-sky-700"
   },
   {
-  lable: "Conversion",
+  lable: "Conversation",
   icon:LucideMessageSquareShare,
-  href: "/conversion",
+  href: "/conversation",
   color:"text-violet-700"
   },
   {
