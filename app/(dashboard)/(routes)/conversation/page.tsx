@@ -1,5 +1,4 @@
-"use client"
-
+"use client";
 
 import * as z from "zod";
 import { Heading } from "@/components/heading";
@@ -11,35 +10,35 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-const ConversationPage = () => {   
-const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema), 
-    defaultValues:{
-        prompt: ""
-    }
-})
+const ConversationPage = () => {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      prompt: "",
+    },
+  });
 
-const isLoading = form.formState.isSubmitting;
+  const isLoading = form.formState.isSubmitting;
 
-const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     console.log(values);
-}  
-    
-     return(
-        <div> 
-        <Heading
-            title="Conversation"
-            description="Manage your conversations with our advanced Visura conversation model"
-            icon={MessageSquare}
-            iconColor="text-violet-500"
-            bgColor="bg-violet-500/10"
-        />
-        <div className="px-4 lg:px-8">
-            <div>
-                <Form {...form}>
-                    <form 
-                        onSubmit={form.handleSubmit(onSubmit)}
-                        className="
+  };
+
+  return (
+    <div>
+      <Heading
+        title="Conversation"
+        description="Manage your conversations with our advanced Visura conversation model"
+        icon={MessageSquare}
+        iconColor="text-violet-500"
+        bgColor="bg-violet-500/10"
+      />
+      <div className="px-4 lg:px-8">
+        <div>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="
                         rounded-lg
                         border
                         w-full
@@ -49,42 +48,43 @@ const onSubmit = async (values: z.infer<typeof formSchema>) => {
                         focus-within:shadow-md
                         grid
                         grid-cols-12
-                        gap-2">
-
-                    <FormField 
-                    name="prompt"
-                    render={({ field }) => (
-                        <FormItem className="col-span-12 lg:col-span-10">
-                            <FormControl className="m-0 p-0">
-                                <Input
-                                className="
+                        gap-2"
+            >
+              <FormField
+                name="prompt"
+                render={({ field }) => (
+                  <FormItem className="col-span-12 lg:col-span-10">
+                    <FormControl className="m-0 p-0">
+                      <Input
+                        className="
                                 border-none
                                 shadow-none
                                 outline-none 
                                 focus-visible:ring-0
                                 focus-visible:ring-transparent"
-                                
-                                disabled = {isLoading}
-                                placeholder="Hey!! What do you need to know today? "
-                                {...field}/>
-                                                                    
-                                
-                            </FormControl>
-                        </FormItem>
-                    )} />
-                    <Button className="col-span-12 lg:col-span-2 w-full bg-violet-500 hover:bg-violet-600" disabled={isLoading} type="submit">
-                        Ask Now
-                     </Button>
-                    </form>
-                </Form>
-            </div>
-
-            <div className="space-y-4 mt-4 font-semibold">
-                Message Content
-            </div>
+                        disabled={isLoading}
+                        placeholder="Hey!! What do you need to know today? "
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <Button
+                className="col-span-12 lg:col-span-2 w-full bg-violet-500 hover:bg-violet-600"
+                disabled={isLoading}
+                type="submit"
+              >
+                Ask Now
+              </Button>
+            </form>
+          </Form>
         </div>
-        </div>
-    );
-}
 
-export default ConversationPage; 
+        <div className="space-y-4 mt-4 font-semibold">Message Content</div>
+      </div>
+    </div>
+  );
+};
+
+export default ConversationPage;
