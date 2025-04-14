@@ -78,7 +78,7 @@ const ConversationPage = () => {
                                 focus-visible:ring-0
                                 focus-visible:ring-transparent"
                         disabled={isLoading}
-                        placeholder="Hey!! What do you need to know today? "
+                        placeholder="What do you need to know today? "
                         {...field}
                       />
                     </FormControl>
