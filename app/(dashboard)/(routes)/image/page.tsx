@@ -1,8 +1,16 @@
+import { Heading } from "@/components/heading";
+import { Images, MessageSquare } from "lucide-react";
+
 const ImagePage = ()=>{
     return (
         <div>
-            <h1>Image Page</h1>
-            <p>This is the image page.</p>
+            <Heading
+                    title="Image Generation"
+                    description="Generate your own images with Visura Image Generation"
+                    icon={Images}
+                    iconColor="text-cyan-500"
+                    bgColor="bg-cyan-500/10"
+                  />
         </div>
     );
 }

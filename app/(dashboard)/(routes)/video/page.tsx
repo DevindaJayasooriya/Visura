@@ -1,8 +1,16 @@
+import { Heading } from "@/components/heading";
+import { Clapperboard, MessageSquare } from "lucide-react";
+
 const VideoPage = ()=>{
     return (
         <div>
-            <h1>Image Page</h1>
-            <p>This is the image page.</p>
+            <Heading
+                    title="Video Generation"
+                    description="Generate your own clips with Visura Video Generation"
+                    icon={Clapperboard}
+                    iconColor="text-fuchsia-500"
+                    bgColor="bg-fuchsia-500/10"
+                  />
         </div>
     );
 }
