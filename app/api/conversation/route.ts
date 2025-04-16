@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import type { ChatCompletionMessageParam } from 'openai';
+type ChatMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam;
 
 // ✅ Initialize OpenAI SDK v4
 const openai = new OpenAI({
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   try {
     const { userId } = await auth();
     const body = await req.json();
-    const { messages }: { messages: ChatCompletionMessageParam[] } = body;
+    const { messages }: { messages: ChatMessage[] } = body;
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -32,8 +32,13 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(response.choices[0].message);
-  } catch (error) {
+  } catch (error:any) {
     console.error("[CONVERSATION_ERROR]", error);
+
+    if (error.status === 429 || error.code === "insufficient_quota") {
+      return new NextResponse("Rate limit or quota exceeded", { status: 429 });
+    }
+
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
