@@ -4,7 +4,7 @@ import OpenAI from "openai";
 import axios from "axios";
 import * as z from "zod";
 import { Heading } from "@/components/heading";
-import { MessageSquare, User, Bot, Copy, RefreshCw, Code } from "lucide-react";
+import { User, Bot, Copy, RefreshCw, Code } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { formSchema } from "./constants";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,9 +16,17 @@ import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avarat";
 import { BotAvatar } from "@/components/bot-avatar";
-import { toast } from "react-hot-toast"; // You'll need to install this package
+import { toast } from "react-hot-toast"; 
+import ReactMarkdown from "react-markdown";
+import { Prism } from "react-syntax-highlighter";
+import { atomDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+
 
 type ChatMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam;
+type CodeProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+  className?: string;
+  children?: React.ReactNode;
+};
 
 const CodePage = () => {
   const router = useRouter();
@@ -61,7 +69,7 @@ const CodePage = () => {
       // Remove the last assistant message
       const newMessages = messages.slice(0, -1);
       
-      const response = await axios.post("/api/conversation", {
+      const response = await axios.post("/api/code", {
         messages: newMessages,
       });
 
@@ -112,71 +120,48 @@ const CodePage = () => {
   };
 
   const renderMessageContent = (message: ChatMessage) => {
-    if (typeof message.content === "string") {
-      return (
-        <div className="prose prose-sm max-w-none">
-        {formatMessageContent(message.content)}
-      </div>
-      );
-    } else if (Array.isArray(message.content)) {
-      return message.content.map((part, i) =>
-        typeof part === "string" ? (
-          <div key={i} className="prose prose-sm max-w-none">
-          {formatMessageContent(part)}
-        </div>
-        ) : part.type === "text" ? (
-          <div key={i} className="prose prose-sm max-w-none">
-          {formatMessageContent(part.text)}
-        </div>
-        ) : (
-          <p key={i}>[Content type not supported]</p>
-        )
-      );
-    }
-    return JSON.stringify(message.content);
-  };
-
-  // Helper function to format content with better readability
-const formatMessageContent = (content: string) => {
-  // Add line breaks for paragraphs
-  const paragraphs = content.split(/\n\n+/);
+    const content = typeof message.content === "string" 
+      ? message.content 
+      : Array.isArray(message.content) 
+        ? message.content.map(part => 
+            typeof part === "string" ? part : part.type === "text" ? part.text : ""
+          ).join("\n") 
+        : JSON.stringify(message.content);
   
-  return (
-    <>
-      {paragraphs.map((paragraph, idx) => {
-        // Check if this is a list item
-        if (paragraph.trim().startsWith('- ') || 
-            paragraph.trim().startsWith('* ') || 
-            /^\d+\./.test(paragraph.trim())) {
-          return <ul key={idx} className="list-disc ml-5 my-2">{paragraph.split('\n').map((item, i) => (
-            <li key={i}>{item.replace(/^[*-]\s+/, '')}</li>
-          ))}</ul>;
-        }
-        
-        // Check if it's a heading
-        if (paragraph.trim().startsWith('#')) {
-          const level = paragraph.match(/^(#+)/)[0].length;
-          const text = paragraph.replace(/^#+\s+/, '');
-          
-          if (level === 1) return <h3 key={idx} className="font-bold text-lg mt-3 mb-2">{text}</h3>;
-          if (level === 2) return <h4 key={idx} className="font-bold text-base mt-2 mb-1">{text}</h4>;
-          return <h5 key={idx} className="font-bold text-sm mt-2 mb-1">{text}</h5>;
-        }
-        
-        // Regular paragraph
-        return <p key={idx} className="my-2">{paragraph}</p>;
-      })}
-    </>
-  );
-};
+    return (
+      <div className="prose prose-sm max-w-none">
+        <ReactMarkdown
+          children={content}
+          components={{
+            code({ className, children }) {
+              // Regular inline code
+              if (!className) {
+                return <code>{children}</code>;
+              }
+              
+              // Code block with language
+              const language = className.replace('language-', '');
+              return (
+                <Prism
+                  children={String(children).replace(/\n$/, '')}
+                  language={language}
+                  style={atomDark as any}
+                />
+              );
+            }
+          }}
+        />
+      </div>
+    );
+  };
   return (
     <div>
       <Heading
         title="Code Generation"
         description="Generate your own solution with Visura Code Generation"
         icon={Code}
-        iconColor="text-teal-500"
-        bgColor="bg-teal-500/10"
+        iconColor="text-teal-700"
+        bgColor="bg-teal-700/10"
       />
 
       <div className="px-4 lg:px-8">
