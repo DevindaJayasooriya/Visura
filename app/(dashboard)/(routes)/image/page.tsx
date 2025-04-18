@@ -173,7 +173,7 @@ const formatMessageContent = (content: string) => {
     <div>
       <Heading
         title="Image Generation"
-        description="Manage your conversations with our advanced Visura conversation model"
+        description="Turn your idea to an image with Visura Image Generation"
         icon={Images}
         iconColor="text-cyan-500"
         bgColor="bg-cyan-500/10"
