@@ -16,30 +16,30 @@ import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avarat";
 import { BotAvatar } from "@/components/bot-avatar";
-import { toast } from "react-hot-toast"; // You'll need to install this package
+import { toast } from "react-hot-toast"; 
 
-type ChatMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam;
-
-const ConversationPage = () => {
+const ImagePage = () => {
   const router = useRouter();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [image, setImages] = useState<string[]>([]) 
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       prompt: "",
+      amount:"1",
+      resolution:"512x512"
     },
   });
 
   const isLoading = form.formState.isSubmitting;
 
   // Scroll to bottom whenever messages change
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  // useEffect(() => {
+  //   scrollToBottom();
+  // }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -52,21 +52,20 @@ const ConversationPage = () => {
   };
 
   const regenerateResponse = async () => {
-    if (messages.length < 2) return;
+    // if (messages.length < 2) return;
     
     setIsRegenerating(true);
     setError(null);
     
     try {
       // Remove the last assistant message
-      const newMessages = messages.slice(0, -1);
+      // const newMessages = messages.slice(0, -1);
       
       const response = await axios.post("/api/conversation", {
-        messages: newMessages,
+        // messages: newMessages,
       });
 
       // Replace the last message with the new response
-      setMessages([...newMessages, response.data]);
     } catch (error: any) {
       console.log("[REGENERATE_ERROR]", error);
       setError("Failed to regenerate response. Please try again.");
@@ -78,21 +77,12 @@ const ConversationPage = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setError(null);
     try {
-      const userMessage: ChatMessage = {
-        role: "user",
-        content: values.prompt,
-      };
-      const newMessages = [...messages, userMessage];
+       setImages([])
+      const response = await axios.post("/api/image", values);
 
-      setMessages((current) => [...current, userMessage]);
-
-      const response = await axios.post("/api/conversation", {
-        messages: newMessages,
-      });
-
-      // Add the assistant's response to messages
-      setMessages((current) => [...current, response.data]);
-
+      const urls = response.data.map((image:{url:string})=>image.url ) 
+      
+      setImages(urls)
       form.reset();
     } catch (error: any) {
       console.log("[CONVERSATION_ERROR]", error);
@@ -111,30 +101,30 @@ const ConversationPage = () => {
     }
   };
 
-  const renderMessageContent = (message: ChatMessage) => {
-    if (typeof message.content === "string") {
-      return (
-        <div className="prose prose-sm max-w-none">
-        {formatMessageContent(message.content)}
-      </div>
-      );
-    } else if (Array.isArray(message.content)) {
-      return message.content.map((part, i) =>
-        typeof part === "string" ? (
-          <div key={i} className="prose prose-sm max-w-none">
-          {formatMessageContent(part)}
-        </div>
-        ) : part.type === "text" ? (
-          <div key={i} className="prose prose-sm max-w-none">
-          {formatMessageContent(part.text)}
-        </div>
-        ) : (
-          <p key={i}>[Content type not supported]</p>
-        )
-      );
-    }
-    return JSON.stringify(message.content);
-  };
+  // const renderMessageContent = (message: ChatMessage) => {
+  //   if (typeof message.content === "string") {
+  //     return (
+  //       <div className="prose prose-sm max-w-none">
+  //       {formatMessageContent(message.content)}
+  //     </div>
+  //     );
+  //   } else if (Array.isArray(message.content)) {
+  //     return message.content.map((part, i) =>
+  //       typeof part === "string" ? (
+  //         <div key={i} className="prose prose-sm max-w-none">
+  //         {formatMessageContent(part)}
+  //       </div>
+  //       ) : part.type === "text" ? (
+  //         <div key={i} className="prose prose-sm max-w-none">
+  //         {formatMessageContent(part.text)}
+  //       </div>
+  //       ) : (
+  //         <p key={i}>[Content type not supported]</p>
+  //       )
+  //     );
+  //   }
+  //   return JSON.stringify(message.content);
+  // };
 
   // Helper function to format content with better readability
 const formatMessageContent = (content: string) => {
@@ -183,73 +173,13 @@ const formatMessageContent = (content: string) => {
         {/* Message display area - with fixed height and scrolling */}
         <div className="mt-4 mb-24">
           <div className="h-[70vh] overflow-y-auto">
-            {messages.length === 0 ? (
+            {image.length === 0 ? (
               <div className="flex items-center justify-center h-full text-gray-500 font-medium text-xl">
                 Start generation by providing a prompt...
                 </div>
             ) : (
               <div className="flex flex-col gap-y-4">
-                {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={cn(
-                      "p-6 w-full flex flex-col rounded-lg",
-                      message.role === "user"
-                        ? "bg-violet-500/10 ml-auto max-w-md"
-                        : "bg-gray-100 mr-auto max-w-md"
-                    )}
-                  >
-                    <div className="flex items-center mb-2">
-                      {message.role === "user" ? (
-                        <div className="flex items-center gap-2">
-                          <UserAvatar />
-                          <span className="text-sm font-medium">You</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <BotAvatar />
-                          <span className="text-sm font-medium">Visura AI</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-sm">
-                      {renderMessageContent(message)}
-                    </div>
-                    
-                    {/* Add buttons for assistant messages */}
-                    {message.role === "assistant" && (
-                      <div className="flex justify-end gap-2 mt-2">
-                        <Button 
-                          onClick={() => copyToClipboard(typeof message.content === "string" 
-                            ? message.content 
-                            : JSON.stringify(message.content))}
-                          size="sm" 
-                          variant="ghost" 
-                          className="p-1 h-8"
-                        >
-                          <Copy className="h-4 w-4" />
-                          <span className="ml-1 text-xs">Copy</span>
-                        </Button>
-                        
-                        {index === messages.length - 1 && message.role === "assistant" && (
-                          <Button 
-                            onClick={regenerateResponse}
-                            size="sm" 
-                            variant="ghost" 
-                            className="p-1 h-8"
-                            disabled={isRegenerating}
-                          >
-                            <RefreshCw className={cn("h-4 w-4", isRegenerating && "animate-spin")} />
-                            <span className="ml-1 text-xs">
-                              {isRegenerating ? "Regenerating..." : "Regenerate"}
-                            </span>
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
+               <p>Images will render here </p>
               </div>
             )}
           </div>
@@ -317,4 +247,4 @@ const formatMessageContent = (content: string) => {
   );
 };
 
-export default ConversationPage;
+export default ImagePage;
